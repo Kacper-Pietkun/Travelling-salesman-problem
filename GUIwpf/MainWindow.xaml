@@ -28,25 +28,107 @@
         <Border Grid.Row="2" Grid.Column="3"  Background="Black" />
         <Border Grid.Row="1" Grid.Column="2"  Background="LightCyan" />
         <Border Grid.Row="2" Grid.Column="2"  Background="LightCyan" />
-        <Border Grid.Row="1" Grid.Column="1"  Background="SteelBlue" />
-        <Border Grid.Row="2" Grid.Column="1"  Background="SteelBlue" />
+        <Border Grid.Row="1" Grid.Column="1"  Background="SteelBlue" Grid.RowSpan="2" />
 
 
         <Canvas x:Name="canvasTsp" Grid.Row="1" Grid.Column="2" Background="LightCyan"
                 Height="auto" Width="auto" Margin="10,10,10,10" />
 
-        <DataGrid x:Name="dataGridCanvas" Grid.Row="2" Grid.Column="2"
-                  Height="130" Margin="10,10,10,10" IsReadOnly="True"/>
 
-        <StackPanel Grid.Row="1" Grid.Column="1">
-            <Button Name="buttonOpenTspFile" Click="OpenTspFile_Click"
-                    Content="Open .tsp file" Margin="50,25,50,0"/>
+        <GroupBox Header="Optimal Tour" Margin="10,0,10,20" Grid.Row="2" Grid.Column="2">
+            <DataGrid x:Name="dataGridCanvas" Height="130" Margin="10,0,10,0"
+                      IsReadOnly="True" CanUserSortColumns="False" CanUserReorderColumns="False"
+                      AutoGenerateColumns="False" CanUserResizeColumns="False"
+                      ItemsSource="{Binding}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Width="*"/>
+                    <DataGridTextColumn Header="X" Width="*"/>
+                    <DataGridTextColumn Header="Y" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
 
-            <StackPanel Margin="50,25,50,0">
-                <Label FontWeight="Bold">Choose mechanism</Label>
-                <RadioButton IsChecked="True">Tasks</RadioButton>
-                <RadioButton>Threads</RadioButton>
+        
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="2">
+
+            <GroupBox Header=".TSP file" Margin="10,25,10,0">
+                <Button x:Name="buttonOpenTspFile" Click="OpenTspFile_Click"
+                    Content="Open" Width="150" Margin="0,10,0,10" />
+            </GroupBox>
+
+            
+            <GroupBox Header="Mechanism" Margin="10,35,10,0">
+                <StackPanel Margin="10,10,10,10" Orientation="Horizontal" 
+                            HorizontalAlignment="Center">
+                    <RadioButton x:Name="radioButtonTasks" IsChecked="True" Margin="20,0,20,0">
+                        Tasks
+                    </RadioButton>
+                    <RadioButton x:Name="radioButtonThreads" Margin="20,0,20,0">
+                        Threads
+                    </RadioButton>
+                </StackPanel>
+            </GroupBox>
+
+            
+            <GroupBox Header="Number of Tasks/Threads" Margin="10,35,10,0">
+                <TextBox x:Name="TextBoxTasksNumber" Width="75" Margin="10,10,10,10"
+                         PreviewTextInput="NumberValidationTextBox">1</TextBox>
+            </GroupBox>
+
+
+            <GroupBox Header="Time for each phase" Margin="10,35,10,0">
+                <StackPanel Margin="10,10,10,10">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label FontWeight="Bold" Width="50">PMX:</Label>
+                        <TextBox x:Name="TextBoxPmxTime" Width="75" Margin="10,0,10,0"
+                         PreviewTextInput="NumberValidationTextBox">30</TextBox>
+                        <ComboBox x:Name="comboBoxPmxUnit" Width="50"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                            Margin="0,5,0,0">
+                        <Label FontWeight="Bold" Width="50">3-opt:</Label>
+                        <TextBox x:Name="TextBox3optTime" Width="75" Margin="10,0,10,0"
+                         PreviewTextInput="NumberValidationTextBox">30</TextBox>
+                        <ComboBox x:Name="comboBox3optUnit" Width="50"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </GroupBox>
+            
+            
+            <GroupBox Header="Progress &amp; Results" Margin="10,35,10,0">
+                <StackPanel Margin="10,10,10,10">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label FontWeight="Bold" Width="100">Best result:</Label>
+                        <Label x:Name="labelBestResult" FontWeight="Bold" Width="100"
+                               Content="0" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label FontWeight="Bold" Width="100">Thread Id:</Label>
+                        <Label x:Name="labelThreadId" FontWeight="Bold" Width="100"
+                               Content="0" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label FontWeight="Bold" Width="100">Epoch:</Label>
+                        <Label x:Name="labelEpochCount" FontWeight="Bold" Width="100"
+                               Content="0" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                    <ProgressBar x:Name="progressBarStatus" Minimum="0" Maximum="100" Value="75"
+                                 Margin="0,10,0,0" Height="5" />
+
+                </StackPanel>
+            </GroupBox>
+
+
+            <StackPanel Margin="10,15,10,0" Orientation="Horizontal" 
+                            HorizontalAlignment="Center">
+                <Button x:Name="buttonStart" Click="StartCalculations_Click"
+                    Content="Start" Width="75" Margin="10,10,10,10" />
+                <Button x:Name="buttonExit" Click="Exit_Click"
+                    Content="Exit" Width="75" Margin="10,10,10,10" />
             </StackPanel>
+
         </StackPanel>
 
 

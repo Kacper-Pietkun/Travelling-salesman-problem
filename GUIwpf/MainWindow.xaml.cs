@@ -19,6 +19,8 @@ using Color = System.Windows.Media.Color;
 using System.Xml.Linq;
 using Size = System.Windows.Size;
 using Microsoft.Win32;
+using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace GUIwpf
 {
@@ -33,6 +35,8 @@ namespace GUIwpf
         public MainWindow()
         {
             InitializeComponent();
+            InitializeTimeUnitComboBox(comboBoxPmxUnit);
+            InitializeTimeUnitComboBox(comboBox3optUnit);
             LoadGraph();
         }
 
@@ -54,6 +58,32 @@ namespace GUIwpf
                 TspGraph = new TspGraph(openFileDialog.FileName);
                 TspGraph.Draw(canvasTsp);
             }
+        }
+
+        private void StartCalculations_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void InitializeTimeUnitComboBox(ComboBox comboBox)
+        {
+            comboBox.ItemsSource = new BindingList<String>(new string[]
+            {
+                "s",
+                "min"
+            });
+            comboBox.SelectedIndex = 0;
+        }
+        
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
     }
 }
