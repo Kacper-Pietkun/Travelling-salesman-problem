@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <BaseOutputPath>C:\Users\kacpe\Desktop\Studia\Semestr7\Programowanie Aplikacji Lokalnych .NET\Projekt\MultiThreading\TSP\SharedBuild</BaseOutputPath>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,56 @@
+﻿<Window x:Class="GUIwpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GUIwpf"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="700" Width="900"
+        SizeChanged="WindowSizeChanged">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="7*"/>
+            <ColumnDefinition Width="10"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="10"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Grid.Column="0"  Background="Black" Grid.ColumnSpan="4"/>
+        <Border Grid.Row="3" Grid.Column="0"  Background="Black" Grid.ColumnSpan="4"/>
+        <Border Grid.Row="1" Grid.Column="0"  Background="Black" />
+        <Border Grid.Row="2" Grid.Column="0"  Background="Black" />
+        <Border Grid.Row="1" Grid.Column="3"  Background="Black" />
+        <Border Grid.Row="2" Grid.Column="3"  Background="Black" />
+        <Border Grid.Row="1" Grid.Column="2"  Background="LightCyan" />
+        <Border Grid.Row="2" Grid.Column="2"  Background="LightCyan" />
+        <Border Grid.Row="1" Grid.Column="1"  Background="SteelBlue" />
+        <Border Grid.Row="2" Grid.Column="1"  Background="SteelBlue" />
+
+
+        <Canvas x:Name="canvasTsp" Grid.Row="1" Grid.Column="2" Background="LightCyan"
+                Height="auto" Width="auto" Margin="10,10,10,10" />
+
+        <DataGrid x:Name="dataGridCanvas" Grid.Row="2" Grid.Column="2"
+                  Height="130" Margin="10,10,10,10" IsReadOnly="True"/>
+
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <Button Name="buttonOpenTspFile" Click="OpenTspFile_Click"
+                    Content="Open .tsp file" Margin="50,25,50,0"/>
+
+            <StackPanel Margin="50,25,50,0">
+                <Label FontWeight="Bold">Choose mechanism</Label>
+                <RadioButton IsChecked="True">Tasks</RadioButton>
+                <RadioButton>Threads</RadioButton>
+            </StackPanel>
+        </StackPanel>
+
+
+    </Grid>
+    
+
+</Window>
