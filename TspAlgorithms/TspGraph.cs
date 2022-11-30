@@ -21,7 +21,13 @@ namespace TspAlgorithms
             this.Nodes = Nodes;
         }
 
-        public List<(int, PointF)> GetRandomPermutation()
+        public TspGraph(string pathToFile)
+        {
+            TspFileReader tspFileReader = new TspFileReader();
+            Nodes = tspFileReader.ReadFile(pathToFile);
+        }
+
+        public void PermutateNodes()
         {
             List<(int, PointF)> nodesPermutation = new List<(int, PointF)>(Nodes);
 
@@ -33,8 +39,7 @@ namespace TspAlgorithms
                 nodesPermutation[index] = nodesPermutation[i];
                 nodesPermutation[i] = temp;
             }
-
-            return Nodes;
+            Nodes = nodesPermutation;
         }
 
         public float GetPathLength()

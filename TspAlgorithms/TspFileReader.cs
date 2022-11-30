@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GUIwpf
+namespace TspAlgorithms
 {
     public class TspFileReader
     {
-        public List<PointF> ReadFile(string path)
+        public List<(int, PointF)> ReadFile(string path)
         {
-            List<PointF> result = new List<PointF>();
+            List<(int, PointF)> result = new List<(int, PointF)>();
             string[] lines = File.ReadAllLines(path);
             foreach (string line in lines)
             {
@@ -23,7 +22,7 @@ namespace GUIwpf
                     int index = Int32.Parse(splits[0]);
                     float x = float.Parse(splits[1], CultureInfo.InvariantCulture);
                     float y = float.Parse(splits[2], CultureInfo.InvariantCulture);
-                    result.Add(new PointF(x, y));
+                    result.Add((index, new PointF(x, y)));
                 }
                 catch { }
             }

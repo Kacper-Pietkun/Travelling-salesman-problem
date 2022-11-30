@@ -21,6 +21,7 @@ using Size = System.Windows.Size;
 using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
+using TspAlgorithms;
 
 namespace GUIwpf
 {
@@ -31,23 +32,20 @@ namespace GUIwpf
     {
 
         public TspGraph TspGraph { get; set; }
+        public UiGraphManager UiGraphManager { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
             InitializeTimeUnitComboBox(comboBoxPmxUnit);
             InitializeTimeUnitComboBox(comboBox3optUnit);
-            LoadGraph();
-        }
-
-        private void LoadGraph()
-        {
-            
+            UiGraphManager = new UiGraphManager(canvasTsp);
         }
 
         private void WindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            TspGraph?.Draw(canvasTsp);
+            if (TspGraph != null)
+                UiGraphManager.Draw(TspGraph);
         }
 
         private void OpenTspFile_Click(object sender, RoutedEventArgs e)
@@ -56,7 +54,7 @@ namespace GUIwpf
             if (openFileDialog.ShowDialog() == true)
             {
                 TspGraph = new TspGraph(openFileDialog.FileName);
-                TspGraph.Draw(canvasTsp);
+                UiGraphManager.Draw(TspGraph);
             }
         }
 

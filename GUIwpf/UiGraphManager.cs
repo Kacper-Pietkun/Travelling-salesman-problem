@@ -7,46 +7,30 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Xml.Linq;
+using TspAlgorithms;
 
 namespace GUIwpf
 {
-    public class TspGraph
+    public class UiGraphManager
     {
-        public List<PointF> Nodes { get; set; }
-
-        public TspGraph(string pathToFile)
+        private Canvas canvas;
+        public UiGraphManager(Canvas _canvas)
         {
-            TspFileReader tspFileReader = new TspFileReader();
-            Nodes = tspFileReader.ReadFile(pathToFile);
+            canvas = _canvas;
         }
 
-        public List<PointF> GetRandomPermutation()
-        {
-            List<PointF> nodesPermutation = new List<PointF>(Nodes);
-
-            for (int i = 0; i < nodesPermutation.Count; i++)
-            {
-                Random random = new Random();
-                int index = random.Next(nodesPermutation.Count);
-                PointF temp = nodesPermutation[index];
-                nodesPermutation[index] = nodesPermutation[i];
-                nodesPermutation[i] = temp;
-            }
-
-            return Nodes;
-        }
-
-        public void Draw(Canvas canvas)
+        public void Draw(TspGraph graph)
         {
             canvas.Children.Clear();
             float delta = 20;
-            float maxWidth = (float) canvas.ActualWidth - delta;
-            float maxHeight = (float) canvas.ActualHeight - delta;
+            float maxWidth = (float)canvas.ActualWidth - delta;
+            float maxHeight = (float)canvas.ActualHeight - delta;
             float maxPointX = float.MinValue;
             float minPointX = float.MaxValue;
             float maxPointY = float.MinValue;
             float minPointY = float.MaxValue;
-            foreach (PointF point in Nodes)
+            foreach ((int index, PointF point) in graph.Nodes)
             {
                 if (point.X > maxPointX)
                     maxPointX = point.X;
@@ -57,18 +41,18 @@ namespace GUIwpf
                 if (point.Y < minPointY)
                     minPointY = point.Y;
             }
-            List<PointF> scaledNodes = new List<PointF>(Nodes);
+            List<(int, PointF)> scaledNodes = new List<(int, PointF)>(graph.Nodes);
             for (int i = 0; i < scaledNodes.Count; i++)
-                scaledNodes[i] = new PointF((scaledNodes[i].X - minPointX) / (maxPointX - minPointX) * maxWidth + delta / 2,
-                    (scaledNodes[i].Y - minPointY) / (maxPointY - minPointY) * maxHeight + delta / 2);
+                scaledNodes[i] = (scaledNodes[i].Item1, new PointF((scaledNodes[i].Item2.X - minPointX) / (maxPointX - minPointX) * maxWidth + delta / 2,
+                    (scaledNodes[i].Item2.Y - minPointY) / (maxPointY - minPointY) * maxHeight + delta / 2));
 
             DrawEdges(canvas, scaledNodes);
             DrawNodes(canvas, scaledNodes);
         }
 
-        private void DrawNodes(Canvas canvas, List<PointF> scaledNodes)
+        private void DrawNodes(Canvas canvas, List<(int, PointF)> scaledNodes)
         {
-            foreach (PointF point in scaledNodes)
+            foreach ((int index, PointF point) in scaledNodes)
             {
                 Ellipse node = new Ellipse
                 {
@@ -84,21 +68,20 @@ namespace GUIwpf
             }
         }
 
-        private void DrawEdges(Canvas canvas, List<PointF> scaledNodes)
+        private void DrawEdges(Canvas canvas, List<(int, PointF)> scaledNodes)
         {
             for (int i = 0; i < scaledNodes.Count; i++)
             {
                 Line edge = new Line
                 {
-                    X1 = scaledNodes[i].X,
-                    Y1 = scaledNodes[i].Y,
-                    X2 = scaledNodes[(i + 1) % scaledNodes.Count].X,
-                    Y2 = scaledNodes[(i + 1) % scaledNodes.Count].Y,
+                    X1 = scaledNodes[i].Item2.X,
+                    Y1 = scaledNodes[i].Item2.Y,
+                    X2 = scaledNodes[(i + 1) % scaledNodes.Count].Item2.X,
+                    Y2 = scaledNodes[(i + 1) % scaledNodes.Count].Item2.Y,
                     Stroke = Brushes.Black,
                 };
                 canvas.Children.Add(edge);
             }
         }
-
     }
 }
