@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,5 +7,9 @@
     <Nullable>enable</Nullable>
     <BaseOutputPath>C:\Users\kacpe\Desktop\Studia\Semestr7\Programowanie Aplikacji Lokalnych .NET\Projekt\MultiThreading\TSP\SharedBuild</BaseOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TspAlgorithms\TspAlgorithms.csproj" />
+  </ItemGroup>
 
 </Project>
