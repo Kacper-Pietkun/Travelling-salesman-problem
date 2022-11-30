@@ -11,6 +11,11 @@ namespace TspAlgorithms
     {
         public List<(int, PointF)> Nodes { get; set; }
 
+        public TspGraph()
+        {
+            this.Nodes = new List<(int, PointF)>();
+        }
+
         public TspGraph(List<(int, PointF)> Nodes)
         {
             this.Nodes = Nodes;
