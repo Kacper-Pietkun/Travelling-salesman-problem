@@ -9,22 +9,22 @@ namespace TspAlgorithms
 {
     public class Pmx
     {
-        private List<(int, PointF)> firstPermutation;
-        private List<(int, PointF)> secondPermutation;
-        private List<(int, PointF)> resultingPermutation;
+        private TspGraph firstGraph;
+        private TspGraph secondGraph;
+        public TspGraph ResultingGraph { get; set; }
         private int subnodesCount;
         private int permutationLength;
         private Random random;
 
-        public Pmx(List<(int, PointF)> _firstPermutation, List<(int, PointF)> _secondPermutation, int _subnodesCount)
+        public Pmx(TspGraph _firstGraph, TspGraph _secondGraph, int _subnodesCount)
         {
-            firstPermutation = _firstPermutation;
-            secondPermutation = _secondPermutation;
-            resultingPermutation = new List<(int, PointF)>();
-            for (int i = 0; i < firstPermutation.Count; i++)
-                resultingPermutation.Add((-1, new PointF(0, 0)));
+            firstGraph = _firstGraph;
+            secondGraph = _secondGraph;
+            ResultingGraph = new TspGraph();
+            for (int i = 0; i < firstGraph.Nodes.Count; i++)
+                ResultingGraph.Nodes.Add((-1, new PointF(0, 0)));
             subnodesCount = _subnodesCount;
-            permutationLength = firstPermutation.Count;
+            permutationLength = firstGraph.Nodes.Count;
             random = new Random();
         }
 
@@ -33,14 +33,9 @@ namespace TspAlgorithms
             int startIndex = 3;// random.Next(0, permutationLength - subnodesCount + 1);
             int endIndex = startIndex + subnodesCount - 1;
 
-            CopySubNodes(firstPermutation, resultingPermutation, startIndex, endIndex);
-            ReassignNodes(firstPermutation, secondPermutation, resultingPermutation, startIndex, endIndex);
-            CopyRemainingnodes(secondPermutation, resultingPermutation);
-        }
-
-        public List<(int, PointF)> GetResultingPermutation()
-        {
-            return resultingPermutation;
+            CopySubNodes(firstGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
+            ReassignNodes(firstGraph.Nodes, secondGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
+            CopyRemainingnodes(secondGraph.Nodes, ResultingGraph.Nodes);
         }
 
         private void CopyRemainingnodes(List<(int, PointF)> source, List<(int, PointF)> destination)
