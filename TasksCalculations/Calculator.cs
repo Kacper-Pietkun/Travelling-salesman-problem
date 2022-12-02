@@ -44,9 +44,15 @@ namespace TasksCalculations
             TspGraph secondParent = new TspGraph(_tspGraph);
             firstParent.PermutateNodes();
             secondParent.PermutateNodes();
+            TspGraph theBestSoFarGraph = new TspGraph(firstParent);
+            
             while (true)
             {
-                secondParent.PermutateNodes();
+                if (theBestSoFarGraph.PathLength > firstParent.PathLength)
+                    theBestSoFarGraph = new TspGraph(firstParent);
+                if (theBestSoFarGraph.PathLength > secondParent.PathLength)
+                    theBestSoFarGraph = new TspGraph(secondParent);
+
                 Pmx pmx = new Pmx(firstParent, secondParent, firstParent.Nodes.Count / 2);
                 pmx.Start();
                 TspGraph resultPmx = pmx.ResultingGraph;
@@ -55,9 +61,9 @@ namespace TasksCalculations
                 threeOpt.Start();
                 TspGraph resultThreeOpt = threeOpt.BestGraph;
 
-                ss.WriteString(resultThreeOpt.GetFormattedGraph());
+                ss.WriteString(theBestSoFarGraph.GetFormattedGraph());
                 firstParent = new TspGraph(resultThreeOpt);
-                secondParent = new TspGraph(resultThreeOpt);
+                secondParent.PermutateNodes();
             }
 
             pipeData.Close();
@@ -91,6 +97,7 @@ namespace TasksCalculations
                 _pmxTime = int.Parse(ss.ReadString());
                 _threeOptTime = int.Parse(ss.ReadString());
                 _tspGraph = new TspGraph(ss.ReadString(), true);
+                _tspGraph.PermutateNodes();
             }
             catch (FormatException e)
             {

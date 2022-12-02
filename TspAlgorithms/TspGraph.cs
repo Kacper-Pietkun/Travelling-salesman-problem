@@ -13,15 +13,18 @@ namespace TspAlgorithms
     public class TspGraph : ISerializable
     {
         public List<(int, PointF)> Nodes { get; set; }
+        public float PathLength { get; set; }
 
         public TspGraph()
         {
             this.Nodes = new List<(int, PointF)>();
+            PathLength = 0;
         }
 
         public TspGraph(List<(int, PointF)> Nodes)
         {
             this.Nodes = Nodes;
+            CalculatePathLength();
         }
 
         public TspGraph(SerializationInfo info, StreamingContext context)
@@ -38,17 +41,20 @@ namespace TspAlgorithms
                 if (nodeId != null && nodePointX != null && nodePointY != null)
                 Nodes.Add((nodeId.Value, new PointF(nodePointX.Value, nodePointY.Value)));
             }
+            CalculatePathLength();
         }
 
         public TspGraph(string pathToFile)
         {
             TspFileReader tspFileReader = new TspFileReader();
             Nodes = tspFileReader.ReadFile(pathToFile);
+            CalculatePathLength();
         }
 
         public TspGraph(TspGraph tspGraph)
         {
             Nodes = new List<(int, PointF)>(tspGraph.Nodes);
+            CalculatePathLength();
         }
 
         public TspGraph(string formattedString, bool dummy)
@@ -61,6 +67,7 @@ namespace TspAlgorithms
                 newGraph = (TspGraph)bf.Deserialize(stream);
             }
             Nodes = new List<(int, PointF)>(newGraph.Nodes);
+            CalculatePathLength();
         }
 
         public void PermutateNodes()
@@ -76,6 +83,7 @@ namespace TspAlgorithms
                 nodesPermutation[i] = temp;
             }
             Nodes = nodesPermutation;
+            CalculatePathLength();
         }
 
         public string GetFormattedGraph()
@@ -90,12 +98,21 @@ namespace TspAlgorithms
             return Encoding.GetEncoding("ISO-8859-1").GetString(tspGraphBytes);
         }
 
-        public float GetPathLength()
+        public void CalculatePathLength()
         {
             float length = 0;
             for (int i = 0; i < Nodes.Count - 1; i++)
                 length += MathF.Sqrt( MathF.Pow(Nodes[i].Item2.X - Nodes[i + 1].Item2.X, 2) + MathF.Pow(Nodes[i].Item2.Y - Nodes[i + 1].Item2.Y, 2));
             length += MathF.Sqrt(MathF.Pow(Nodes[0].Item2.X - Nodes[Nodes.Count-1].Item2.X, 2) + MathF.Pow(Nodes[0].Item2.Y - Nodes[Nodes.Count - 1].Item2.Y, 2));
+            PathLength = length;
+        }
+
+        public float GetPathLength()
+        {
+            float length = 0;
+            for (int i = 0; i < Nodes.Count - 1; i++)
+                length += MathF.Sqrt(MathF.Pow(Nodes[i].Item2.X - Nodes[i + 1].Item2.X, 2) + MathF.Pow(Nodes[i].Item2.Y - Nodes[i + 1].Item2.Y, 2));
+            length += MathF.Sqrt(MathF.Pow(Nodes[0].Item2.X - Nodes[Nodes.Count - 1].Item2.X, 2) + MathF.Pow(Nodes[0].Item2.Y - Nodes[Nodes.Count - 1].Item2.Y, 2));
             return length;
         }
 

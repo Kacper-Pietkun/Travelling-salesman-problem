@@ -20,7 +20,7 @@ namespace GUIwpf
             canvas = _canvas;
         }
 
-        public void Draw(TspGraph graph)
+        public void Draw(TspGraph graph, bool onlyNodes=false)
         {
             if (graph == null)
                 return;
@@ -48,7 +48,8 @@ namespace GUIwpf
                 scaledNodes[i] = (scaledNodes[i].Item1, new PointF((scaledNodes[i].Item2.X - minPointX) / (maxPointX - minPointX) * maxWidth + delta / 2,
                     (scaledNodes[i].Item2.Y - minPointY) / (maxPointY - minPointY) * maxHeight + delta / 2));
 
-            DrawEdges(canvas, scaledNodes);
+            if (onlyNodes == false)
+                DrawEdges(canvas, scaledNodes);
             DrawNodes(canvas, scaledNodes);
         }
 
