@@ -39,7 +39,26 @@ namespace TasksCalculations
         public void DoCalculations()
         {
             StreamString ss = new StreamString(pipeData);
-            // TODO: do calculations and send them to the parent process
+
+            TspGraph firstParent = new TspGraph(_tspGraph);
+            TspGraph secondParent = new TspGraph(_tspGraph);
+            firstParent.PermutateNodes();
+            secondParent.PermutateNodes();
+            while (true)
+            {
+                secondParent.PermutateNodes();
+                Pmx pmx = new Pmx(firstParent, secondParent, firstParent.Nodes.Count / 2);
+                pmx.Start();
+                TspGraph resultPmx = pmx.ResultingGraph;
+
+                ThreeOpt threeOpt = new ThreeOpt(resultPmx);
+                threeOpt.Start();
+                TspGraph resultThreeOpt = threeOpt.BestGraph;
+
+                ss.WriteString(resultThreeOpt.GetFormattedGraph());
+                firstParent = new TspGraph(resultThreeOpt);
+                secondParent = new TspGraph(resultThreeOpt);
+            }
 
             pipeData.Close();
         }
@@ -71,13 +90,7 @@ namespace TasksCalculations
                 _numberOfTasks = int.Parse(ss.ReadString());
                 _pmxTime = int.Parse(ss.ReadString());
                 _threeOptTime = int.Parse(ss.ReadString());
-                string sGraph = ss.ReadString();
-                byte[] bytesGraph = Encoding.GetEncoding("ISO-8859-1").GetBytes(sGraph);
-                BinaryFormatter bf = new BinaryFormatter();
-                using (MemoryStream stream = new MemoryStream(bytesGraph))
-                {
-                    _tspGraph = (TspGraph)bf.Deserialize(stream);
-                }
+                _tspGraph = new TspGraph(ss.ReadString(), true);
             }
             catch (FormatException e)
             {

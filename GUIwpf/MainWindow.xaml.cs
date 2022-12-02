@@ -24,6 +24,8 @@ using System.ComponentModel;
 using TspAlgorithms;
 using System.IO.Pipes;
 using System.Threading;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace GUIwpf
 {
@@ -36,6 +38,7 @@ namespace GUIwpf
         public TspGraph? TspGraph { get; set; }
         public UiGraphManager UiGraphManager { get; set; }
         public ProcessesManager ProcessesManager { get; set; }
+        private Task canvasTask;
 
         public MainWindow()
         {
@@ -44,12 +47,13 @@ namespace GUIwpf
             InitializeTimeUnitComboBox(comboBox3optUnit);
             UiGraphManager = new UiGraphManager(canvasTsp);
             ProcessesManager = new ProcessesManager();
+
+            canvasTask = Task.Factory.StartNew(() => UpdateCanvas());
         }
 
         private void WindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (TspGraph != null)
-                UiGraphManager.Draw(TspGraph);
+            UiGraphManager.Draw(TspGraph);
         }
 
         private void OpenTspFile_Click(object sender, RoutedEventArgs e)
@@ -108,6 +112,18 @@ namespace GUIwpf
         {
             Regex regex = new Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void UpdateCanvas()
+        {
+            while (true)
+            {
+                Application.Current.Dispatcher.Invoke((Action) delegate {
+                    UiGraphManager.Draw(ProcessesManager.bestGraph);
+                });
+
+                Thread.Sleep(50);
+            }
         }
     }
 }

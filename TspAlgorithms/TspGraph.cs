@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,6 +46,23 @@ namespace TspAlgorithms
             Nodes = tspFileReader.ReadFile(pathToFile);
         }
 
+        public TspGraph(TspGraph tspGraph)
+        {
+            Nodes = new List<(int, PointF)>(tspGraph.Nodes);
+        }
+
+        public TspGraph(string formattedString, bool dummy)
+        {
+            TspGraph newGraph = null;
+            byte[] bytesGraph = Encoding.GetEncoding("ISO-8859-1").GetBytes(formattedString);
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream stream = new MemoryStream(bytesGraph))
+            {
+                newGraph = (TspGraph)bf.Deserialize(stream);
+            }
+            Nodes = new List<(int, PointF)>(newGraph.Nodes);
+        }
+
         public void PermutateNodes()
         {
             List<(int, PointF)> nodesPermutation = new List<(int, PointF)>(Nodes);
@@ -58,6 +76,18 @@ namespace TspAlgorithms
                 nodesPermutation[i] = temp;
             }
             Nodes = nodesPermutation;
+        }
+
+        public string GetFormattedGraph()
+        {
+            byte[] tspGraphBytes;
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                bf.Serialize(stream, this);
+                tspGraphBytes = stream.ToArray();
+            }
+            return Encoding.GetEncoding("ISO-8859-1").GetString(tspGraphBytes);
         }
 
         public float GetPathLength()
@@ -79,5 +109,7 @@ namespace TspAlgorithms
                 info.AddValue($"NodePointY{i}", Nodes[i].Item2.Y);
             }
         }
+
+        
     }
 }

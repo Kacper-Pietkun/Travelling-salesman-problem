@@ -26,6 +26,7 @@ namespace GUIwpf
         private int _pmxTime;
         private int _threeOptTime;
         private TspGraph _tspGraph;
+        public TspGraph bestGraph { get; set; }
 
         public ProcessesManager()
         {
@@ -43,6 +44,7 @@ namespace GUIwpf
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
             _tspGraph = tspGraph;
+            bestGraph = tspGraph;
             Process.Start("TasksCalculations.exe");
             workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
@@ -67,7 +69,7 @@ namespace GUIwpf
             while (message != "EOS")
             {
                 message = ss.ReadString();
-                // TODO: process message from another process
+                bestGraph = new TspGraph(message, true);
             }
 
             pipeData.Close();
@@ -83,16 +85,7 @@ namespace GUIwpf
                 ss.WriteString(_numberOfTasks.ToString());
                 ss.WriteString(_pmxTime.ToString());
                 ss.WriteString(_threeOptTime.ToString());
-
-                byte[] tspGraphBytes;
-                BinaryFormatter bf = new BinaryFormatter();
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    bf.Serialize(stream, _tspGraph);
-                    tspGraphBytes = stream.ToArray();
-                }
-                string msg = Encoding.GetEncoding("ISO-8859-1").GetString(tspGraphBytes);
-                ss.WriteString(msg);
+                ss.WriteString(_tspGraph.GetFormattedGraph());
 
                 // TODO: delete this busy wait - here we are going to implement user ability to cancel calculations done by another process
                 while (true)

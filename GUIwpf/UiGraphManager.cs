@@ -22,6 +22,8 @@ namespace GUIwpf
 
         public void Draw(TspGraph graph)
         {
+            if (graph == null)
+                return;
             canvas.Children.Clear();
             float delta = 20;
             float maxWidth = (float)canvas.ActualWidth - delta;
