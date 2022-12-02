@@ -22,6 +22,8 @@ using Microsoft.Win32;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
 using TspAlgorithms;
+using System.IO.Pipes;
+using System.Threading;
 
 namespace GUIwpf
 {
@@ -31,8 +33,9 @@ namespace GUIwpf
     public partial class MainWindow : Window
     {
 
-        public TspGraph TspGraph { get; set; }
+        public TspGraph? TspGraph { get; set; }
         public UiGraphManager UiGraphManager { get; set; }
+        public ProcessesManager ProcessesManager { get; set; }
 
         public MainWindow()
         {
@@ -40,6 +43,7 @@ namespace GUIwpf
             InitializeTimeUnitComboBox(comboBoxPmxUnit);
             InitializeTimeUnitComboBox(comboBox3optUnit);
             UiGraphManager = new UiGraphManager(canvasTsp);
+            ProcessesManager = new ProcessesManager();
         }
 
         private void WindowSizeChanged(object sender, SizeChangedEventArgs e)
@@ -60,7 +64,29 @@ namespace GUIwpf
 
         private void StartCalculations_Click(object sender, RoutedEventArgs e)
         {
+            int pmxTime = Int32.Parse(TextBoxPmxTime.Text);
+            if (comboBoxPmxUnit.Text == "min")
+                pmxTime *= 60;
+            int threeOptTime = Int32.Parse(TextBox3optTime.Text);
+            if (comboBox3optUnit.Text == "min")
+                threeOptTime *= 60;
 
+            if (TspGraph == null)
+            {
+                MessageBox.Show("You need to load a graph first");
+                return;
+            }
+
+            if (radioButtonTasks.IsChecked == true)
+            {
+                int numberOfTasks = Int32.Parse(TextBoxTasksNumber.Text);
+                ProcessesManager.StartTasks(numberOfTasks, pmxTime, threeOptTime, TspGraph);
+            }
+            else
+            {
+                int numberOfThreads = Int32.Parse(TextBoxTasksNumber.Text);
+                ProcessesManager.StartThreads(numberOfThreads, pmxTime, threeOptTime, TspGraph);
+            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
