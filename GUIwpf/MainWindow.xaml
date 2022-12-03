@@ -133,7 +133,7 @@
             <StackPanel Margin="10,15,10,0" Orientation="Horizontal" 
                             HorizontalAlignment="Center">
                 <Button x:Name="buttonStart"  Click="StartCalculations_Click"
-                    Content="Start" Width="75" Margin="10,10,10,10"
+                    Content="{Binding ProcessesManager.ButtonStartContent}" Width="75" Margin="10,10,10,10"
                         IsEnabled="{Binding ProcessesManager.ShouldStartButtonBeEnabled}"/>
                 <Button x:Name="buttonExit" Click="Exit_Click"
                     Content="Exit" Width="75" Margin="10,10,10,10"  />

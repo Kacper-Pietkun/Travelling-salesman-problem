@@ -55,6 +55,7 @@ namespace GUIwpf
             ProcessesManager.BestGraphThreadId = "...";
             ProcessesManager.BestScore = "...";
             ProcessesManager.ShouldStartButtonBeEnabled = true;
+            ProcessesManager.ButtonStartContent = "Start";
             canvasTask = Task.Factory.StartNew(() => UpdateCanvas());
         }
 
@@ -75,7 +76,7 @@ namespace GUIwpf
 
         private void StartCalculations_Click(object sender, RoutedEventArgs e)
         {
-            if (buttonStart.Content.ToString() == "Start")
+            if (ProcessesManager.ButtonStartContent == "Start")
             {
                 if (TspGraph == null)
                 {
@@ -83,7 +84,8 @@ namespace GUIwpf
                     return;
                 }
                 ProcessesManager.ShouldStartButtonBeEnabled = false;
-                buttonStart.Content = "Pause";
+                ProcessesManager.ButtonStartContent = "Pause";
+                ProcessesManager.PhaseCounter = 0;
 
                 int pmxTime = Int32.Parse(TextBoxPmxTime.Text);
                 if (comboBoxPmxUnit.Text == "min")
@@ -105,16 +107,16 @@ namespace GUIwpf
                 }
                 
             }
-            else if (buttonStart.Content.ToString() == "Pause")
+            else if (ProcessesManager.ButtonStartContent == "Pause")
             {
                 ProcessesManager.ShouldStartButtonBeEnabled = false;
-                buttonStart.Content = "Resume";
+                ProcessesManager.ButtonStartContent = "Resume";
                 CommandResource.SetCommand("Pause");
             }
-            else if (buttonStart.Content.ToString() == "Resume")
+            else if (ProcessesManager.ButtonStartContent == "Resume")
             {
                 ProcessesManager.ShouldStartButtonBeEnabled = false;
-                buttonStart.Content = "Pause";
+                ProcessesManager.ButtonStartContent = "Pause";
                 CommandResource.SetCommand("Resume");
             }
 
@@ -145,9 +147,12 @@ namespace GUIwpf
         {
             while (true)
             {
-                Application.Current.Dispatcher.Invoke((Action) delegate {
-                    UiGraphManager.Draw(ProcessesManager.BestGraph);
-                });
+                if (ProcessesManager.ButtonStartContent != "Start")
+                {
+                    Application.Current.Dispatcher.Invoke((Action)delegate {
+                        UiGraphManager.Draw(ProcessesManager.BestGraph);
+                    });
+                }
 
                 Thread.Sleep(50);
             }

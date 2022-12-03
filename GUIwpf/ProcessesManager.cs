@@ -14,8 +14,8 @@ namespace GUIwpf
     {
         private NamedPipeServerStream pipeRequests;
         private NamedPipeClientStream pipeData;
-        private readonly BackgroundWorker workerRequests;
-        private readonly BackgroundWorker workerData;
+        private BackgroundWorker workerRequests;
+        private BackgroundWorker workerData;
         private int _numberOfTasks;
         private int _pmxTime;
         private int _threeOptTime;
@@ -124,9 +124,28 @@ namespace GUIwpf
                 }
             }
         }
+
+        private string _buttonStartContent;
+        public string ButtonStartContent
+        {
+            get
+            {
+                return _buttonStartContent;
+            }
+            set
+            {
+                if (_buttonStartContent != value)
+                {
+                    _buttonStartContent = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private CommandResource _commandResource;
 
-        public ProcessesManager()
+
+        private void FirstConfigurations()
         {
             workerRequests = new BackgroundWorker();
             //workerRequests.DoWork += SendRequests;
@@ -139,6 +158,7 @@ namespace GUIwpf
 
         public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
+            FirstConfigurations();
             _numberOfTasks = numberOfTasks;
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
@@ -154,6 +174,7 @@ namespace GUIwpf
 
         public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
+            FirstConfigurations();
             _numberOfTasks = numberOfThreads;
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
@@ -203,6 +224,8 @@ namespace GUIwpf
                 }
                 message = ss.ReadString();
             }
+            _commandResource.SetCommand("EOS");
+            ButtonStartContent = "Start";
 
             pipeData.Close();
         }
@@ -238,8 +261,8 @@ namespace GUIwpf
                             break;
                     }
                     command = _commandResource.GetCommand();
-
                 }
+                ss.WriteString("EOS");
 
             }
             catch (IOException ex)

@@ -149,19 +149,16 @@ namespace TasksCalculations
                     if (ex is OperationCanceledException || ex is AggregateException)
                     {
                         _tokenSource = null;
-                        Console.WriteLine("Paused");
                         ss.WriteString("Paused");
                         commandResource.GetCommand();
-                        Console.WriteLine("Resumed");
                         ss.WriteString("Resumed");
-
                     }
                 }
             }
+            ss.WriteString("EOS");
             pipeData.Close();
             if (_tokenSource != null)
                 _tokenSource.Dispose();
-            ss.WriteString("EOS");
         }
 
         private TspGraph ThreeOptThread(ThreeOpt threeOpt, StreamString ss, CancellationToken token)
