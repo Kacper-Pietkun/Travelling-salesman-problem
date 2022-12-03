@@ -37,7 +37,6 @@ namespace TspAlgorithms
                             BestGraph = firstGraph;
                             bestLength = firstLength;
                             BestGraph.PathLength = bestLength;
-                            yield return 1;
                         }
                         TspGraph secondGraph = CreateSecondPossibility(i, j, k);
                         float secondLength = secondGraph.GetPathLength();
@@ -46,8 +45,8 @@ namespace TspAlgorithms
                             BestGraph = secondGraph;
                             bestLength = secondLength;
                             BestGraph.PathLength = bestLength;
-                            yield return 1;
                         }
+                        yield return 1;
                     }
                 }
             }

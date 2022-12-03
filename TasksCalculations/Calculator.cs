@@ -8,6 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Xml.Linq;
 using TspAlgorithms;
 
@@ -17,7 +18,9 @@ namespace TasksCalculations
     {
         private int _numberOfTasks;
         private int _pmxTime;
+        private bool _isPmxInProgress;
         private int _threeOptTime;
+        private bool _isThreeOptProgress;
         private int _maxEpochs;
         private TspGraph _tspGraph;
         private NamedPipeClientStream pipeRequests;
@@ -65,6 +68,7 @@ namespace TasksCalculations
                 Task[] pmxTasksArray = new Task[_numberOfTasks];
 
                 ss.WriteString("StartPmx");
+                _isPmxInProgress = true;
                 for (int i = 0; i < pmxTasksArray.Length; i++)
                 {
                     int temp = i;
@@ -81,6 +85,10 @@ namespace TasksCalculations
                     },
                     new Pmx(bestGraphs[2* temp], bestGraphs[2* temp + 1], bestGraphs[2*temp].Nodes.Count / 2));
                 }
+                System.Timers.Timer pmxTimer = new System.Timers.Timer(_pmxTime * 1000);
+                pmxTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isPmxInProgress = false;
+                pmxTimer.AutoReset = false;
+                pmxTimer.Enabled = true;
                 Task.WaitAll(pmxTasksArray);
                 bestPmxGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
 
@@ -90,6 +98,7 @@ namespace TasksCalculations
                 List<TspGraph> bestThreeOptGraphes = new List<TspGraph>();
                 Task[] threeOptTasksArray = new Task[_numberOfTasks];
                 ss.WriteString("StartThreeOpt");
+                _isThreeOptProgress = true;
                 for (int i = 0; i < threeOptTasksArray.Length; i++)
                 {
                     threeOptTasksArray[i] = Task.Factory.StartNew((Object obj) =>
@@ -103,6 +112,10 @@ namespace TasksCalculations
                     },
                     new ThreeOpt(bestPmxGraphes[i]));
                 }
+                System.Timers.Timer threeOptTimer = new System.Timers.Timer(_threeOptTime * 1000);
+                threeOptTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isThreeOptProgress = false;
+                threeOptTimer.AutoReset = false;
+                threeOptTimer.Enabled = true;
                 Task.WaitAll(threeOptTasksArray);
                 bestThreeOptGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
     
@@ -137,9 +150,10 @@ namespace TasksCalculations
                         ss.WriteString(globalBestGraph.GetFormattedGraph());
                         ss.WriteString("ThreadId");
                         ss.WriteString(Thread.CurrentThread.ManagedThreadId.ToString());
-
                     }
                 }
+                if (_isThreeOptProgress == false)
+                    break;
             }
             return threeOpt.BestGraph;
         }
@@ -148,8 +162,7 @@ namespace TasksCalculations
         {
             TspGraph bestGraph1 = new TspGraph(pmx.FirstGraph);
             TspGraph bestGraph2 = new TspGraph(pmx.SecondGraph);
-            int counter = 1000;
-            while(counter-- != 0)
+            while(_isPmxInProgress == true)
             {
                 for (int i = 0; i < 1; i++)
                 {
@@ -248,6 +261,8 @@ namespace TasksCalculations
                 _maxEpochs = int.Parse(ss.ReadString());
                 _tspGraph = new TspGraph(ss.ReadString(), true);
                 _tspGraph.PermutateNodes();
+                _isPmxInProgress = false;
+                _isThreeOptProgress = false;
             }
             catch (FormatException e)
             {
