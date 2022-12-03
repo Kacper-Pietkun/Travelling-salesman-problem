@@ -55,7 +55,8 @@
 
             <GroupBox Header=".TSP file" Margin="10,25,10,0">
                 <Button x:Name="buttonOpenTspFile" Click="OpenTspFile_Click"
-                    Content="Open" Width="150" Margin="0,10,0,10" />
+                    Content="Open" Width="150" Margin="0,10,0,10"
+                        IsEnabled="{Binding ProcessesManager.ShouldOpenButtonBeEnabled}"/>
             </GroupBox>
 
             
@@ -136,7 +137,8 @@
                     Content="{Binding ProcessesManager.ButtonStartContent}" Width="75" Margin="10,10,10,10"
                         IsEnabled="{Binding ProcessesManager.ShouldStartButtonBeEnabled}"/>
                 <Button x:Name="buttonExit" Click="Exit_Click"
-                    Content="Exit" Width="75" Margin="10,10,10,10"  />
+                    Content="Exit" Width="75" Margin="10,10,10,10"
+                        IsEnabled="{Binding ProcessesManager.ShouldExitButtonBeEnabled}"/>
             </StackPanel>
 
         </StackPanel>

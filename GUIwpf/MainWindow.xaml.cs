@@ -55,6 +55,8 @@ namespace GUIwpf
             ProcessesManager.BestGraphThreadId = "...";
             ProcessesManager.BestScore = "...";
             ProcessesManager.ShouldStartButtonBeEnabled = true;
+            ProcessesManager.ShouldOpenButtonBeEnabled = true;
+            ProcessesManager.ShouldExitButtonBeEnabled = true;
             ProcessesManager.ButtonStartContent = "Start";
             canvasTask = Task.Factory.StartNew(() => UpdateCanvas());
         }
@@ -84,6 +86,8 @@ namespace GUIwpf
                     return;
                 }
                 ProcessesManager.ShouldStartButtonBeEnabled = false;
+                ProcessesManager.ShouldOpenButtonBeEnabled = false;
+                ProcessesManager.ShouldExitButtonBeEnabled = false;
                 ProcessesManager.ButtonStartContent = "Pause";
                 ProcessesManager.PhaseCounter = 0;
 

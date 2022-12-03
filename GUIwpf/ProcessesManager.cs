@@ -125,6 +125,41 @@ namespace GUIwpf
             }
         }
 
+        private bool _shouldExitButtonBeEnabled;
+        public bool ShouldExitButtonBeEnabled
+        {
+            get
+            {
+                return _shouldExitButtonBeEnabled;
+            }
+            set
+            {
+                if (_shouldExitButtonBeEnabled != value)
+                {
+                    _shouldExitButtonBeEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _shouldOpenButtonBeEnabled;
+        public bool ShouldOpenButtonBeEnabled
+        {
+            get
+            {
+                return _shouldOpenButtonBeEnabled;
+            }
+            set
+            {
+                if (_shouldOpenButtonBeEnabled != value)
+                {
+                    _shouldOpenButtonBeEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
         private string _buttonStartContent;
         public string ButtonStartContent
         {
@@ -225,7 +260,10 @@ namespace GUIwpf
                 message = ss.ReadString();
             }
             _commandResource.SetCommand("EOS");
+            PhaseCounter++;
             ButtonStartContent = "Start";
+            ShouldOpenButtonBeEnabled = true;
+            ShouldExitButtonBeEnabled = true;
 
             pipeData.Close();
         }
@@ -242,7 +280,7 @@ namespace GUIwpf
                 ss.WriteString(_threeOptTime.ToString());
                 ss.WriteString(MaxEpochs.ToString());
                 ss.WriteString(_tspGraph.GetFormattedGraph());
-
+                MaxEpochs++;
 
                 // TODO: Fix busy wait with some syncrhonization method
                 ShouldStartButtonBeEnabled = true;
