@@ -78,7 +78,7 @@ namespace GUIwpf
             int threeOptTime = Int32.Parse(TextBox3optTime.Text);
             if (comboBox3optUnit.Text == "min")
                 threeOptTime *= 60;
-
+            int maxEpochs = Int32.Parse(TextBoxMaxEpochs.Text);
             if (TspGraph == null)
             {
                 MessageBox.Show("You need to load a graph first");
@@ -88,12 +88,12 @@ namespace GUIwpf
             if (radioButtonTasks.IsChecked == true)
             {
                 int numberOfTasks = Int32.Parse(TextBoxTasksNumber.Text);
-                ProcessesManager.StartTasks(numberOfTasks, pmxTime, threeOptTime, TspGraph);
+                ProcessesManager.StartTasks(numberOfTasks, pmxTime, threeOptTime, maxEpochs, TspGraph);
             }
             else
             {
                 int numberOfThreads = Int32.Parse(TextBoxTasksNumber.Text);
-                ProcessesManager.StartThreads(numberOfThreads, pmxTime, threeOptTime, TspGraph);
+                ProcessesManager.StartThreads(numberOfThreads, pmxTime, threeOptTime, maxEpochs, TspGraph);
             }
         }
 

@@ -59,7 +59,7 @@
             </GroupBox>
 
             
-            <GroupBox Header="Mechanism" Margin="10,35,10,0">
+            <GroupBox Header="Mechanism" Margin="10,15,10,0">
                 <StackPanel Margin="10,10,10,10" Orientation="Horizontal" 
                             HorizontalAlignment="Center">
                     <RadioButton x:Name="radioButtonTasks" IsChecked="True" Margin="20,0,20,0">
@@ -72,13 +72,18 @@
             </GroupBox>
 
             
-            <GroupBox Header="Number of Tasks/Threads" Margin="10,35,10,0">
+            <GroupBox Header="Number of Tasks/Threads" Margin="10,15,10,0">
                 <TextBox x:Name="TextBoxTasksNumber" Width="75" Margin="10,10,10,10"
                          PreviewTextInput="NumberValidationTextBox">1</TextBox>
             </GroupBox>
 
+            <GroupBox Header="Number of Epochs" Margin="10,15,10,0">
+                <TextBox x:Name="TextBoxMaxEpochs" Width="75" Margin="10,10,10,10"
+                         PreviewTextInput="NumberValidationTextBox">1</TextBox>
+            </GroupBox>
 
-            <GroupBox Header="Time for each phase" Margin="10,35,10,0">
+
+            <GroupBox Header="Time for each phase" Margin="10,15,10,0">
                 <StackPanel Margin="10,10,10,10">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="50">PMX:</Label>
@@ -98,7 +103,7 @@
             </GroupBox>
             
             
-            <GroupBox Header="Progress &amp; Results" Margin="10,35,10,0">
+            <GroupBox Header="Progress &amp; Results" Margin="10,15,10,0">
                 <StackPanel Margin="10,10,10,10">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="100">Best result:</Label>
@@ -116,7 +121,9 @@
                                Content="{Binding ProcessesManager.Epoch}"
                                HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                    <ProgressBar x:Name="progressBarStatus" Minimum="0" Maximum="100" Value="75"
+                    <ProgressBar x:Name="progressBarStatus" Minimum="0"
+                                 Maximum="{Binding ProcessesManager.MaxEpochs}"
+                                 Value="{Binding ProcessesManager.PhaseCounter}"
                                  Margin="0,10,0,0" Height="5" />
 
                 </StackPanel>

@@ -18,6 +18,7 @@ namespace TasksCalculations
         private int _numberOfTasks;
         private int _pmxTime;
         private int _threeOptTime;
+        private int _maxEpochs;
         private TspGraph _tspGraph;
         private NamedPipeClientStream pipeRequests;
         private NamedPipeServerStream pipeData;
@@ -53,7 +54,7 @@ namespace TasksCalculations
                 bestGraphs.Add(new TspGraph(_tspGraph, true));
                 bestGraphs.Add(new TspGraph(_tspGraph, true));
             }
-            while (true)
+            while (_maxEpochs != 0)
             {
                 for (int i = 0; i < bestGraphs.Count; i++)
                     bestGraphs[i] = new TspGraph(bestGraphs[i]);
@@ -116,9 +117,10 @@ namespace TasksCalculations
                 for (int i = 0; i < 2 * _numberOfTasks; i++)
                     bestGraphs.Add(new TspGraph(bestThreeOptGraphes[i%bestThreeOptGraphes.Count]));
                 PermutateGraphList(bestGraphs);
-                Console.WriteLine(bestGraphs.Count);
+                _maxEpochs--;
             }
             pipeData.Close();
+            ss.WriteString("EOS");
         }
 
         private TspGraph ThreeOptThread(ThreeOpt threeOpt, StreamString ss)
@@ -243,6 +245,7 @@ namespace TasksCalculations
                 _numberOfTasks = int.Parse(ss.ReadString());
                 _pmxTime = int.Parse(ss.ReadString());
                 _threeOptTime = int.Parse(ss.ReadString());
+                _maxEpochs = int.Parse(ss.ReadString());
                 _tspGraph = new TspGraph(ss.ReadString(), true);
                 _tspGraph.PermutateNodes();
             }

@@ -55,6 +55,22 @@ namespace GUIwpf
         }
 
         private int _phaseCounter;
+        public int PhaseCounter
+        {
+            get
+            {
+                return _phaseCounter;
+            }
+            set
+            {
+                if (_phaseCounter != value)
+                {
+                    _phaseCounter = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private string _currentPhase;
         private string _epoch;
         public string Epoch
@@ -73,6 +89,24 @@ namespace GUIwpf
             }
         }
 
+        private int _maxEpochs;
+        public int MaxEpochs
+        {
+            get
+            {
+                return _maxEpochs;
+            }
+            set
+            {
+                if (_maxEpochs != value)
+                {
+                    _maxEpochs = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
         public ProcessesManager()
         {
             workerRequests = new BackgroundWorker();
@@ -81,27 +115,29 @@ namespace GUIwpf
             workerData.DoWork += GatherGraphData;
             pipeRequests = new NamedPipeServerStream("TspPipeRequests", PipeDirection.InOut, 2);
             pipeData = new NamedPipeClientStream(".", "TspPipeData", PipeDirection.InOut, PipeOptions.None, TokenImpersonationLevel.Impersonation);
-            _phaseCounter = 0;
+            PhaseCounter = 0;
         }
 
-        public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, TspGraph tspGraph)
+        public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph)
         {
             _numberOfTasks = numberOfTasks;
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
             _tspGraph = tspGraph;
+            MaxEpochs = maxEpochs;
             BestGraph = tspGraph;
             Process.Start("TasksCalculations.exe");
             workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
         }
 
-        public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, TspGraph tspGraph)
+        public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph)
         {
             _numberOfTasks = numberOfThreads;
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
             _tspGraph = tspGraph;
+            MaxEpochs = maxEpochs;
             Process.Start("ThreadsCalculations.exe");
             workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
@@ -117,14 +153,13 @@ namespace GUIwpf
                 switch (message)
                 {
                     case "StartPmx":
-                        _phaseCounter++;
+                        PhaseCounter++;
                         _currentPhase = "Pmx";
-                        Epoch = _currentPhase + ": " + _phaseCounter;
+                        Epoch = _currentPhase + ": " + PhaseCounter;
                         break;
                     case "StartThreeOpt":
-                        _phaseCounter++;
                         _currentPhase = "3-opt";
-                        Epoch = _currentPhase + ": " + _phaseCounter;
+                        Epoch = _currentPhase + ": " + PhaseCounter;
                         break;
                     case "Graph":
                         BestGraph = new TspGraph(ss.ReadString(), true);
@@ -150,6 +185,7 @@ namespace GUIwpf
                 ss.WriteString(_numberOfTasks.ToString());
                 ss.WriteString(_pmxTime.ToString());
                 ss.WriteString(_threeOptTime.ToString());
+                ss.WriteString(MaxEpochs.ToString());
                 ss.WriteString(_tspGraph.GetFormattedGraph());
 
                 // TODO: delete this busy wait - here we are going to implement user ability to cancel calculations done by another process
