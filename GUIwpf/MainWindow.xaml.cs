@@ -128,7 +128,7 @@ namespace GUIwpf
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void InitializeTimeUnitComboBox(ComboBox comboBox)

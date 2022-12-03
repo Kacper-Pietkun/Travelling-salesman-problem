@@ -202,7 +202,6 @@ namespace GUIwpf
             BestGraph = tspGraph;
             _commandResource = commandResource;
             Process.Start("TasksCalculations.exe");
-            //workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
             Task task = Task.Run(() => SendRequests());
         }
@@ -217,7 +216,6 @@ namespace GUIwpf
             MaxEpochs = maxEpochs;
             _commandResource = commandResource;
             Process.Start("ThreadsCalculations.exe");
-            //workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
             Task task = Task.Run(() => SendRequests());
         }
