@@ -26,8 +26,10 @@ namespace TasksCalculations
         private NamedPipeClientStream pipeRequests;
         private NamedPipeServerStream pipeData;
         private object _lockSendBestGraph = new object();
+        private object _pauseMonitorLock = new object();
         private TspGraph globalBestGraph = null;
         private Random random = new Random();
+        private CancellationTokenSource _tokenSource;
 
         public Calculator()
         {
@@ -48,6 +50,8 @@ namespace TasksCalculations
         public void DoCalculations()
         {
             StreamString ss = new StreamString(pipeData);
+            _tokenSource = new CancellationTokenSource();
+            var token = _tokenSource.Token;
 
             globalBestGraph = new TspGraph(_tspGraph, true);
 
@@ -63,80 +67,89 @@ namespace TasksCalculations
                     bestGraphs[i] = new TspGraph(bestGraphs[i]);
 
 
-
-                List<TspGraph> bestPmxGraphes = new List<TspGraph>();
-                Task[] pmxTasksArray = new Task[_numberOfTasks];
-
-                ss.WriteString("StartPmx");
-                _isPmxInProgress = true;
-                for (int i = 0; i < pmxTasksArray.Length; i++)
+                // TODO: Check if calculations are not paused
+                try
                 {
-                    int temp = i;
-                    pmxTasksArray[temp] = Task.Factory.StartNew((Object obj) =>
+                    List<TspGraph> bestPmxGraphes = new List<TspGraph>();
+                    Task[] pmxTasksArray = new Task[_numberOfTasks];
+
+
+                    ss.WriteString("StartPmx");
+                    _isPmxInProgress = true;
+                    for (int i = 0; i < pmxTasksArray.Length; i++)
                     {
-                        Pmx pmx = obj as Pmx;
-
-                        (TspGraph first, TspGraph second) = PmxThread(pmx, ss, temp);
-                        lock (_lockSendBestGraph)
+                        int temp = i;
+                        pmxTasksArray[temp] = Task.Factory.StartNew((Object obj) =>
                         {
-                            bestPmxGraphes.Add(first);
-                            bestPmxGraphes.Add(second);
-                        }
-                    },
-                    new Pmx(bestGraphs[2* temp], bestGraphs[2* temp + 1], bestGraphs[2*temp].Nodes.Count / 2));
+                            Pmx pmx = obj as Pmx;
+                            (TspGraph first, TspGraph second) = PmxThread(pmx, ss, token);
+                            lock (_lockSendBestGraph)
+                            {
+                                bestPmxGraphes.Add(first);
+                                bestPmxGraphes.Add(second);
+                            }
+                        },
+                        new Pmx(bestGraphs[2 * temp], bestGraphs[2 * temp + 1], bestGraphs[2 * temp].Nodes.Count / 2));
+                    }
+                    System.Timers.Timer pmxTimer = new System.Timers.Timer(_pmxTime * 1000);
+                    pmxTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isPmxInProgress = false;
+                    pmxTimer.AutoReset = false;
+                    pmxTimer.Enabled = true;
+                    Task.WaitAll(pmxTasksArray);
+                    _isPmxInProgress = false;
+                    bestPmxGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
+                    bestPmxGraphes.RemoveRange(0, _numberOfTasks);
+
+
+                    List<TspGraph> bestThreeOptGraphes = new List<TspGraph>();
+                    Task[] threeOptTasksArray = new Task[_numberOfTasks];
+                    ss.WriteString("StartThreeOpt");
+                    _isThreeOptProgress = true;
+                    for (int i = 0; i < threeOptTasksArray.Length; i++)
+                    {
+                        int temp = i;
+                        threeOptTasksArray[i] = Task.Factory.StartNew((Object obj) =>
+                        {
+                            ThreeOpt threeOpt = obj as ThreeOpt;
+                            TspGraph best3opt = ThreeOptThread(threeOpt, ss, token);
+                            lock (_lockSendBestGraph)
+                            {
+                                bestThreeOptGraphes.Add(best3opt);
+                            }
+                        },
+                        new ThreeOpt(bestPmxGraphes[temp]));
+                    }
+                    System.Timers.Timer threeOptTimer = new System.Timers.Timer(_threeOptTime * 1000);
+                    threeOptTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isThreeOptProgress = false;
+                    threeOptTimer.AutoReset = false;
+                    threeOptTimer.Enabled = true;
+                    Task.WaitAll(threeOptTasksArray);
+                    _isThreeOptProgress = false;
+                    bestThreeOptGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
+                    bestThreeOptGraphes.RemoveRange(0, _numberOfTasks/2);
+
+
+                    bestGraphs.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
+                    bestGraphs.RemoveRange(0, _numberOfTasks);
+                    bestThreeOptGraphes.AddRange(bestGraphs);
+                    bestGraphs = new List<TspGraph>();
+                    for (int i = 0; i < 2 * _numberOfTasks; i++)
+                        bestGraphs.Add(new TspGraph(bestThreeOptGraphes[i%bestThreeOptGraphes.Count]));
+                    PermutateGraphList(bestGraphs);
+                    _maxEpochs--;
                 }
-                System.Timers.Timer pmxTimer = new System.Timers.Timer(_pmxTime * 1000);
-                pmxTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isPmxInProgress = false;
-                pmxTimer.AutoReset = false;
-                pmxTimer.Enabled = true;
-                Task.WaitAll(pmxTasksArray);
-                bestPmxGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
-
-                bestPmxGraphes.RemoveRange(0, _numberOfTasks);
-
-
-                List<TspGraph> bestThreeOptGraphes = new List<TspGraph>();
-                Task[] threeOptTasksArray = new Task[_numberOfTasks];
-                ss.WriteString("StartThreeOpt");
-                _isThreeOptProgress = true;
-                for (int i = 0; i < threeOptTasksArray.Length; i++)
+                catch (OperationCanceledException ex)
                 {
-                    threeOptTasksArray[i] = Task.Factory.StartNew((Object obj) =>
-                    {
-                        ThreeOpt threeOpt = obj as ThreeOpt;
-                        TspGraph best3opt = ThreeOptThread(threeOpt, ss);
-                        lock (_lockSendBestGraph)
-                        {
-                            bestThreeOptGraphes.Add(best3opt);
-                        }
-                    },
-                    new ThreeOpt(bestPmxGraphes[i]));
+                    Monitor.Wait(_pauseMonitorLock);
+                    ss.WriteString("Paused");
                 }
-                System.Timers.Timer threeOptTimer = new System.Timers.Timer(_threeOptTime * 1000);
-                threeOptTimer.Elapsed += (Object source, ElapsedEventArgs e) => _isThreeOptProgress = false;
-                threeOptTimer.AutoReset = false;
-                threeOptTimer.Enabled = true;
-                Task.WaitAll(threeOptTasksArray);
-                bestThreeOptGraphes.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
-    
-                bestThreeOptGraphes.RemoveRange(0, _numberOfTasks/2);
-
-
-                bestGraphs.Sort((g1, g2) => g2.PathLength.CompareTo(g1.PathLength));
-
-                bestGraphs.RemoveRange(0, _numberOfTasks);
-                bestThreeOptGraphes.AddRange(bestGraphs);
-                bestGraphs = new List<TspGraph>();
-                for (int i = 0; i < 2 * _numberOfTasks; i++)
-                    bestGraphs.Add(new TspGraph(bestThreeOptGraphes[i%bestThreeOptGraphes.Count]));
-                PermutateGraphList(bestGraphs);
-                _maxEpochs--;
             }
             pipeData.Close();
+            _tokenSource.Dispose();
             ss.WriteString("EOS");
         }
 
-        private TspGraph ThreeOptThread(ThreeOpt threeOpt, StreamString ss)
+        private TspGraph ThreeOptThread(ThreeOpt threeOpt, StreamString ss, CancellationToken token)
         {
             TspGraph bestGraph = new TspGraph(threeOpt.BestGraph);
             foreach (int i in threeOpt.Start())
@@ -154,11 +167,13 @@ namespace TasksCalculations
                 }
                 if (_isThreeOptProgress == false)
                     break;
+                if (token.IsCancellationRequested)
+                    token.ThrowIfCancellationRequested();
             }
             return threeOpt.BestGraph;
         }
 
-        private (TspGraph, TspGraph) PmxThread(Pmx pmx, StreamString ss, int iii)
+        private (TspGraph, TspGraph) PmxThread(Pmx pmx, StreamString ss, CancellationToken tokeni)
         {
             TspGraph bestGraph1 = new TspGraph(pmx.FirstGraph);
             TspGraph bestGraph2 = new TspGraph(pmx.SecondGraph);
@@ -237,8 +252,17 @@ namespace TasksCalculations
             string message = ss.ReadString();
             while (message != "EOS")
             {
+                switch (message)
+                {
+                    case "Pause":
+                        if (_tokenSource != null)
+                            _tokenSource.Cancel();
+                        break;
+                    case "Resume":
+                        Monitor.Pulse(_pauseMonitorLock);
+                        break;
+                }
                 message = ss.ReadString();
-                // TODO: process message from another process
             }
             pipeRequests.Close();
         }

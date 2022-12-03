@@ -168,6 +168,11 @@ namespace GUIwpf
                     case "ThreadId":
                         BestGraphThreadId = ss.ReadString();
                         break;
+                    case "Paused":
+                        _currentPhase = "3-opt";
+                        PhaseCounter--;
+                        // TODO: Unlock resume button
+                        break;
                 }
                 message = ss.ReadString();
             }
