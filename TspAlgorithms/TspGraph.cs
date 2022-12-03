@@ -14,6 +14,7 @@ namespace TspAlgorithms
     {
         public List<(int, PointF)> Nodes { get; set; }
         public float PathLength { get; set; }
+        private Random random = new Random();
 
         public TspGraph()
         {
@@ -57,6 +58,12 @@ namespace TspAlgorithms
             CalculatePathLength();
         }
 
+        public TspGraph(TspGraph tspGraph, bool permutate_dummy)
+        {
+            Nodes = new List<(int, PointF)>(tspGraph.Nodes);
+            PermutateNodes();
+        }
+
         public TspGraph(string formattedString, bool dummy)
         {
             TspGraph newGraph = null;
@@ -76,7 +83,6 @@ namespace TspAlgorithms
 
             for (int i = 0; i < nodesPermutation.Count; i++)
             {
-                Random random = new Random();
                 int index = random.Next(nodesPermutation.Count);
                 (int, PointF) temp = nodesPermutation[index];
                 nodesPermutation[index] = nodesPermutation[i];

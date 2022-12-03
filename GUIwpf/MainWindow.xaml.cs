@@ -26,6 +26,7 @@ using System.IO.Pipes;
 using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
+using System.Runtime.CompilerServices;
 
 namespace GUIwpf
 {
@@ -47,7 +48,10 @@ namespace GUIwpf
             InitializeTimeUnitComboBox(comboBox3optUnit);
             UiGraphManager = new UiGraphManager(canvasTsp);
             ProcessesManager = new ProcessesManager();
-
+            this.DataContext = this;
+            ProcessesManager.Epoch = "...";
+            ProcessesManager.BestGraphThreadId = "...";
+            ProcessesManager.BestScore = "...";
             canvasTask = Task.Factory.StartNew(() => UpdateCanvas());
         }
 
@@ -119,7 +123,7 @@ namespace GUIwpf
             while (true)
             {
                 Application.Current.Dispatcher.Invoke((Action) delegate {
-                    UiGraphManager.Draw(ProcessesManager.bestGraph);
+                    UiGraphManager.Draw(ProcessesManager.BestGraph);
                 });
 
                 Thread.Sleep(50);

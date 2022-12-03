@@ -9,33 +9,43 @@ namespace TspAlgorithms
 {
     public class Pmx
     {
-        private TspGraph firstGraph;
-        private TspGraph secondGraph;
+        public TspGraph FirstGraph { get; set; }
+        public TspGraph SecondGraph { get; set; }
         public TspGraph ResultingGraph { get; set; }
         private int subnodesCount;
         private int permutationLength;
-        private Random random;
+        private Random random = new Random();
 
         public Pmx(TspGraph _firstGraph, TspGraph _secondGraph, int _subnodesCount)
         {
-            firstGraph = _firstGraph;
-            secondGraph = _secondGraph;
+            FirstGraph = _firstGraph;
+            SecondGraph = _secondGraph;
             ResultingGraph = new TspGraph();
-            for (int i = 0; i < firstGraph.Nodes.Count; i++)
+            for (int i = 0; i < FirstGraph.Nodes.Count; i++)
                 ResultingGraph.Nodes.Add((-1, new PointF(0, 0)));
             subnodesCount = _subnodesCount;
-            permutationLength = firstGraph.Nodes.Count;
-            random = new Random();
+            permutationLength = FirstGraph.Nodes.Count;
         }
 
         public void Start()
         {
-            int startIndex = 3;// random.Next(0, permutationLength - subnodesCount + 1);
+            int startIndex = random.Next(0, permutationLength - subnodesCount + 1);
             int endIndex = startIndex + subnodesCount - 1;
 
-            CopySubNodes(firstGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
-            ReassignNodes(firstGraph.Nodes, secondGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
-            CopyRemainingnodes(secondGraph.Nodes, ResultingGraph.Nodes);
+            CopySubNodes(FirstGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
+            ReassignNodes(FirstGraph.Nodes, SecondGraph.Nodes, ResultingGraph.Nodes, startIndex, endIndex);
+            CopyRemainingnodes(SecondGraph.Nodes, ResultingGraph.Nodes);
+            ResultingGraph.CalculatePathLength();
+        }
+
+        public void SwapParents()
+        {
+            TspGraph temp = FirstGraph;
+            FirstGraph = SecondGraph;
+            SecondGraph = temp;
+            ResultingGraph = new TspGraph();
+            for (int i = 0; i < FirstGraph.Nodes.Count; i++)
+                ResultingGraph.Nodes.Add((-1, new PointF(0, 0)));
         }
 
         private void CopyRemainingnodes(List<(int, PointF)> source, List<(int, PointF)> destination)

@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="700" Width="900"
         SizeChanged="WindowSizeChanged">
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="10"/>
@@ -102,17 +103,18 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="100">Best result:</Label>
                         <Label x:Name="labelBestResult" FontWeight="Bold" Width="100"
-                               Content="0" HorizontalContentAlignment="Center"/>
+                               Content="{Binding ProcessesManager.BestScore}" HorizontalContentAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="100">Thread Id:</Label>
                         <Label x:Name="labelThreadId" FontWeight="Bold" Width="100"
-                               Content="0" HorizontalContentAlignment="Center"/>
+                               Content="{Binding ProcessesManager.BestGraphThreadId}" HorizontalContentAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="100">Epoch:</Label>
                         <Label x:Name="labelEpochCount" FontWeight="Bold" Width="100"
-                               Content="0" HorizontalContentAlignment="Center"/>
+                               Content="{Binding ProcessesManager.Epoch}"
+                               HorizontalContentAlignment="Center"/>
                     </StackPanel>
                     <ProgressBar x:Name="progressBarStatus" Minimum="0" Maximum="100" Value="75"
                                  Margin="0,10,0,0" Height="5" />

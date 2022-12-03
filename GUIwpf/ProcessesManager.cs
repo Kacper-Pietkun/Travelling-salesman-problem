@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Pipes;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using TspAlgorithms;
 using System.ComponentModel;
-using System.Windows.Controls;
 using System.Diagnostics;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
 using System.Security.Principal;
 
 namespace GUIwpf
 {
-    public class ProcessesManager
+    public class ProcessesManager : INotifyPropertyChanged
     {
         private NamedPipeServerStream pipeRequests;
         private NamedPipeClientStream pipeData;
@@ -26,7 +18,60 @@ namespace GUIwpf
         private int _pmxTime;
         private int _threeOptTime;
         private TspGraph _tspGraph;
-        public TspGraph bestGraph { get; set; }
+        public TspGraph BestGraph { get; set; }
+
+        private string _bestScore;
+        public string BestScore
+        {
+            get
+            {
+                return _bestScore;
+            }
+            set
+            {
+                if (_bestScore != value)
+                {
+                    _bestScore = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string _bestGraphThreadId;
+        public string BestGraphThreadId
+        {
+            get
+            {
+                return _bestGraphThreadId;
+            }
+            set
+            {
+                if (_bestGraphThreadId != value)
+                {
+                    _bestGraphThreadId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private int _phaseCounter;
+        private string _currentPhase;
+        private string _epoch;
+        public string Epoch
+        {
+            get
+            {
+                return _epoch;
+            }
+            set
+            {
+                if (_epoch != value)
+                {
+                    _epoch = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public ProcessesManager()
         {
@@ -36,6 +81,7 @@ namespace GUIwpf
             workerData.DoWork += GatherGraphData;
             pipeRequests = new NamedPipeServerStream("TspPipeRequests", PipeDirection.InOut, 2);
             pipeData = new NamedPipeClientStream(".", "TspPipeData", PipeDirection.InOut, PipeOptions.None, TokenImpersonationLevel.Impersonation);
+            _phaseCounter = 0;
         }
 
         public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, TspGraph tspGraph)
@@ -44,7 +90,7 @@ namespace GUIwpf
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
             _tspGraph = tspGraph;
-            bestGraph = tspGraph;
+            BestGraph = tspGraph;
             Process.Start("TasksCalculations.exe");
             workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
@@ -68,8 +114,27 @@ namespace GUIwpf
             string message = ss.ReadString();
             while (message != "EOS")
             {
+                switch (message)
+                {
+                    case "StartPmx":
+                        _phaseCounter++;
+                        _currentPhase = "Pmx";
+                        Epoch = _currentPhase + ": " + _phaseCounter;
+                        break;
+                    case "StartThreeOpt":
+                        _phaseCounter++;
+                        _currentPhase = "3-opt";
+                        Epoch = _currentPhase + ": " + _phaseCounter;
+                        break;
+                    case "Graph":
+                        BestGraph = new TspGraph(ss.ReadString(), true);
+                        BestScore = BestGraph.PathLength.ToString();
+                        break;
+                    case "ThreadId":
+                        BestGraphThreadId = ss.ReadString();
+                        break;
+                }
                 message = ss.ReadString();
-                bestGraph = new TspGraph(message, true);
             }
 
             pipeData.Close();
@@ -100,6 +165,12 @@ namespace GUIwpf
             }
             pipeRequests.Close();
 
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
