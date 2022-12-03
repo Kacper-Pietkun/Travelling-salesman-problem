@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GUIwpf;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO.Pipes;
@@ -30,11 +31,14 @@ namespace TasksCalculations
         private TspGraph globalBestGraph = null;
         private Random random = new Random();
         private CancellationTokenSource _tokenSource;
+        private CancellationToken _token;
+        private CommandResource commandResource;
 
         public Calculator()
         {
             pipeRequests = new NamedPipeClientStream(".", "TspPipeRequests", PipeDirection.InOut, PipeOptions.None, TokenImpersonationLevel.Impersonation);
             pipeData = new NamedPipeServerStream("TspPipeData", PipeDirection.InOut, 2);
+            commandResource = new CommandResource();
         }
 
         public void Calculate()
@@ -50,9 +54,6 @@ namespace TasksCalculations
         public void DoCalculations()
         {
             StreamString ss = new StreamString(pipeData);
-            _tokenSource = new CancellationTokenSource();
-            var token = _tokenSource.Token;
-
             globalBestGraph = new TspGraph(_tspGraph, true);
 
             List<TspGraph> bestGraphs = new List<TspGraph>();
@@ -63,11 +64,16 @@ namespace TasksCalculations
             }
             while (_maxEpochs != 0)
             {
+                if (_tokenSource == null)
+                {
+                    _tokenSource = new CancellationTokenSource();
+                    _token = _tokenSource.Token;
+                }
+                
+
                 for (int i = 0; i < bestGraphs.Count; i++)
                     bestGraphs[i] = new TspGraph(bestGraphs[i]);
 
-
-                // TODO: Check if calculations are not paused
                 try
                 {
                     List<TspGraph> bestPmxGraphes = new List<TspGraph>();
@@ -82,7 +88,7 @@ namespace TasksCalculations
                         pmxTasksArray[temp] = Task.Factory.StartNew((Object obj) =>
                         {
                             Pmx pmx = obj as Pmx;
-                            (TspGraph first, TspGraph second) = PmxThread(pmx, ss, token);
+                            (TspGraph first, TspGraph second) = PmxThread(pmx, ss, _token);
                             lock (_lockSendBestGraph)
                             {
                                 bestPmxGraphes.Add(first);
@@ -111,7 +117,7 @@ namespace TasksCalculations
                         threeOptTasksArray[i] = Task.Factory.StartNew((Object obj) =>
                         {
                             ThreeOpt threeOpt = obj as ThreeOpt;
-                            TspGraph best3opt = ThreeOptThread(threeOpt, ss, token);
+                            TspGraph best3opt = ThreeOptThread(threeOpt, ss, _token);
                             lock (_lockSendBestGraph)
                             {
                                 bestThreeOptGraphes.Add(best3opt);
@@ -138,14 +144,23 @@ namespace TasksCalculations
                     PermutateGraphList(bestGraphs);
                     _maxEpochs--;
                 }
-                catch (OperationCanceledException ex)
+                catch (Exception ex)
                 {
-                    Monitor.Wait(_pauseMonitorLock);
-                    ss.WriteString("Paused");
+                    if (ex is OperationCanceledException || ex is AggregateException)
+                    {
+                        _tokenSource = null;
+                        Console.WriteLine("Paused");
+                        ss.WriteString("Paused");
+                        commandResource.GetCommand();
+                        Console.WriteLine("Resumed");
+                        ss.WriteString("Resumed");
+
+                    }
                 }
             }
             pipeData.Close();
-            _tokenSource.Dispose();
+            if (_tokenSource != null)
+                _tokenSource.Dispose();
             ss.WriteString("EOS");
         }
 
@@ -173,7 +188,7 @@ namespace TasksCalculations
             return threeOpt.BestGraph;
         }
 
-        private (TspGraph, TspGraph) PmxThread(Pmx pmx, StreamString ss, CancellationToken tokeni)
+        private (TspGraph, TspGraph) PmxThread(Pmx pmx, StreamString ss, CancellationToken token)
         {
             TspGraph bestGraph1 = new TspGraph(pmx.FirstGraph);
             TspGraph bestGraph2 = new TspGraph(pmx.SecondGraph);
@@ -215,6 +230,8 @@ namespace TasksCalculations
                             ss.WriteString(Thread.CurrentThread.ManagedThreadId.ToString());
                         }
                     }
+                    if (token.IsCancellationRequested)
+                        token.ThrowIfCancellationRequested();
                 }
             }
             return (bestGraph1, bestGraph2);
@@ -259,7 +276,8 @@ namespace TasksCalculations
                             _tokenSource.Cancel();
                         break;
                     case "Resume":
-                        Monitor.Pulse(_pauseMonitorLock);
+                        Console.WriteLine("Resume info");
+                        commandResource.SetCommand("Resume");
                         break;
                 }
                 message = ss.ReadString();

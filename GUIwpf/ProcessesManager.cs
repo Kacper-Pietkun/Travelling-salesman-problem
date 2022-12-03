@@ -5,6 +5,8 @@ using TspAlgorithms;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GUIwpf
 {
@@ -106,11 +108,28 @@ namespace GUIwpf
             }
         }
 
+        private bool _shouldStartButtonBeEnabled;
+        public bool ShouldStartButtonBeEnabled
+        {
+            get
+            {
+                return _shouldStartButtonBeEnabled;
+            }
+            set
+            {
+                if (_shouldStartButtonBeEnabled != value)
+                {
+                    _shouldStartButtonBeEnabled = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private CommandResource _commandResource;
 
         public ProcessesManager()
         {
             workerRequests = new BackgroundWorker();
-            workerRequests.DoWork += SendRequests;
+            //workerRequests.DoWork += SendRequests;
             workerData = new BackgroundWorker();
             workerData.DoWork += GatherGraphData;
             pipeRequests = new NamedPipeServerStream("TspPipeRequests", PipeDirection.InOut, 2);
@@ -118,7 +137,7 @@ namespace GUIwpf
             PhaseCounter = 0;
         }
 
-        public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph)
+        public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
             _numberOfTasks = numberOfTasks;
             _pmxTime = pmxTime;
@@ -126,21 +145,25 @@ namespace GUIwpf
             _tspGraph = tspGraph;
             MaxEpochs = maxEpochs;
             BestGraph = tspGraph;
+            _commandResource = commandResource;
             Process.Start("TasksCalculations.exe");
-            workerRequests.RunWorkerAsync();
+            //workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
+            Task task = Task.Run(() => SendRequests());
         }
 
-        public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph)
+        public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
             _numberOfTasks = numberOfThreads;
             _pmxTime = pmxTime;
             _threeOptTime = threeOptTime;
             _tspGraph = tspGraph;
             MaxEpochs = maxEpochs;
+            _commandResource = commandResource;
             Process.Start("ThreadsCalculations.exe");
-            workerRequests.RunWorkerAsync();
+            //workerRequests.RunWorkerAsync();
             workerData.RunWorkerAsync();
+            Task task = Task.Run(() => SendRequests());
         }
 
         public void GatherGraphData(object? sender, DoWorkEventArgs e)
@@ -171,7 +194,11 @@ namespace GUIwpf
                     case "Paused":
                         _currentPhase = "3-opt";
                         PhaseCounter--;
-                        // TODO: Unlock resume button
+                        ShouldStartButtonBeEnabled = true;
+                        Epoch = _currentPhase + ": " + PhaseCounter;
+                        break;
+                    case "Resumed":
+                        ShouldStartButtonBeEnabled = true;
                         break;
                 }
                 message = ss.ReadString();
@@ -180,7 +207,7 @@ namespace GUIwpf
             pipeData.Close();
         }
 
-        public void SendRequests(object? sender, DoWorkEventArgs e)
+        public void SendRequests()
         {
             pipeRequests.WaitForConnection();
 
@@ -193,9 +220,24 @@ namespace GUIwpf
                 ss.WriteString(MaxEpochs.ToString());
                 ss.WriteString(_tspGraph.GetFormattedGraph());
 
-                // TODO: delete this busy wait - here we are going to implement user ability to cancel calculations done by another process
-                while (true)
+
+                // TODO: Fix busy wait with some syncrhonization method
+                ShouldStartButtonBeEnabled = true;
+                string command = _commandResource.GetCommand();
+                while (command != "EOS")
                 {
+                    switch (command)
+                    {
+                        case "Pause":
+                            ShouldStartButtonBeEnabled = false;
+                            ss.WriteString("Pause");
+                            break;
+                        case "Resume":
+                            ShouldStartButtonBeEnabled = false;
+                            ss.WriteString("Resume");
+                            break;
+                    }
+                    command = _commandResource.GetCommand();
 
                 }
 

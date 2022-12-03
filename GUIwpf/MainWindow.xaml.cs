@@ -40,6 +40,7 @@ namespace GUIwpf
         public UiGraphManager UiGraphManager { get; set; }
         public ProcessesManager ProcessesManager { get; set; }
         private Task canvasTask;
+        private CommandResource CommandResource { get; set; }
 
         public MainWindow()
         {
@@ -47,11 +48,13 @@ namespace GUIwpf
             InitializeTimeUnitComboBox(comboBoxPmxUnit);
             InitializeTimeUnitComboBox(comboBox3optUnit);
             UiGraphManager = new UiGraphManager(canvasTsp);
+            CommandResource = new CommandResource();
             ProcessesManager = new ProcessesManager();
             this.DataContext = this;
             ProcessesManager.Epoch = "...";
             ProcessesManager.BestGraphThreadId = "...";
             ProcessesManager.BestScore = "...";
+            ProcessesManager.ShouldStartButtonBeEnabled = true;
             canvasTask = Task.Factory.StartNew(() => UpdateCanvas());
         }
 
@@ -72,29 +75,49 @@ namespace GUIwpf
 
         private void StartCalculations_Click(object sender, RoutedEventArgs e)
         {
-            int pmxTime = Int32.Parse(TextBoxPmxTime.Text);
-            if (comboBoxPmxUnit.Text == "min")
-                pmxTime *= 60;
-            int threeOptTime = Int32.Parse(TextBox3optTime.Text);
-            if (comboBox3optUnit.Text == "min")
-                threeOptTime *= 60;
-            int maxEpochs = Int32.Parse(TextBoxMaxEpochs.Text);
-            if (TspGraph == null)
+            if (buttonStart.Content.ToString() == "Start")
             {
-                MessageBox.Show("You need to load a graph first");
-                return;
+                if (TspGraph == null)
+                {
+                    MessageBox.Show("You need to load a graph first");
+                    return;
+                }
+                ProcessesManager.ShouldStartButtonBeEnabled = false;
+                buttonStart.Content = "Pause";
+
+                int pmxTime = Int32.Parse(TextBoxPmxTime.Text);
+                if (comboBoxPmxUnit.Text == "min")
+                    pmxTime *= 60;
+                int threeOptTime = Int32.Parse(TextBox3optTime.Text);
+                if (comboBox3optUnit.Text == "min")
+                    threeOptTime *= 60;
+                int maxEpochs = Int32.Parse(TextBoxMaxEpochs.Text);
+                
+                if (radioButtonTasks.IsChecked == true)
+                {
+                    int numberOfTasks = Int32.Parse(TextBoxTasksNumber.Text);
+                    ProcessesManager.StartTasks(numberOfTasks, pmxTime, threeOptTime, maxEpochs, TspGraph, CommandResource);
+                }
+                else
+                {
+                    int numberOfThreads = Int32.Parse(TextBoxTasksNumber.Text);
+                    ProcessesManager.StartThreads(numberOfThreads, pmxTime, threeOptTime, maxEpochs, TspGraph, CommandResource);
+                }
+                
+            }
+            else if (buttonStart.Content.ToString() == "Pause")
+            {
+                ProcessesManager.ShouldStartButtonBeEnabled = false;
+                buttonStart.Content = "Resume";
+                CommandResource.SetCommand("Pause");
+            }
+            else if (buttonStart.Content.ToString() == "Resume")
+            {
+                ProcessesManager.ShouldStartButtonBeEnabled = false;
+                buttonStart.Content = "Pause";
+                CommandResource.SetCommand("Resume");
             }
 
-            if (radioButtonTasks.IsChecked == true)
-            {
-                int numberOfTasks = Int32.Parse(TextBoxTasksNumber.Text);
-                ProcessesManager.StartTasks(numberOfTasks, pmxTime, threeOptTime, maxEpochs, TspGraph);
-            }
-            else
-            {
-                int numberOfThreads = Int32.Parse(TextBoxTasksNumber.Text);
-                ProcessesManager.StartThreads(numberOfThreads, pmxTime, threeOptTime, maxEpochs, TspGraph);
-            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -129,5 +152,6 @@ namespace GUIwpf
                 Thread.Sleep(50);
             }
         }
+
     }
 }
