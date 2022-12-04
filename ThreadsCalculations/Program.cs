@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using ThreadsCalculations;
 using TspAlgorithms;
 
 namespace ConsoleCalculation2
@@ -8,8 +9,8 @@ namespace ConsoleCalculation2
     {
         static void Main(string[] args)
         {
-
+            Calculator calculator = new Calculator();
+            calculator.Calculate();
         }
-
     }
 }
