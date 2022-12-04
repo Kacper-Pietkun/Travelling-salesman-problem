@@ -17,8 +17,8 @@ namespace GUIwpf
         private BackgroundWorker workerRequests;
         private BackgroundWorker workerData;
         private int _numberOfTasks;
-        private int _pmxTime;
-        private int _threeOptTime;
+        private float _pmxTime;
+        private float _threeOptTime;
         private TspGraph _tspGraph;
         public TspGraph BestGraph { get; set; }
 
@@ -191,7 +191,7 @@ namespace GUIwpf
             PhaseCounter = 0;
         }
 
-        public void StartTasks(int numberOfTasks, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
+        public void StartTasks(int numberOfTasks, float pmxTime, float threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
             FirstConfigurations();
             _numberOfTasks = numberOfTasks;
@@ -206,7 +206,7 @@ namespace GUIwpf
             Task task = Task.Run(() => SendRequests());
         }
 
-        public void StartThreads(int numberOfThreads, int pmxTime, int threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
+        public void StartThreads(int numberOfThreads, float pmxTime, float threeOptTime, int maxEpochs, TspGraph tspGraph, CommandResource commandResource)
         {
             FirstConfigurations();
             _numberOfTasks = numberOfThreads;

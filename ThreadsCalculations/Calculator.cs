@@ -1,6 +1,7 @@
 ﻿using GUIwpf;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Pipes;
 using System.Linq;
 using System.Security.Principal;
@@ -14,9 +15,9 @@ namespace ThreadsCalculations
     public class Calculator
     {
         private int _numberOfTasks;
-        private int _pmxTime;
+        private float _pmxTime;
         private bool _isPmxInProgress;
-        private int _threeOptTime;
+        private float _threeOptTime;
         private bool _isThreeOptProgress;
         private int _maxEpochs;
         private TspGraph _tspGraph;
@@ -306,8 +307,12 @@ namespace ThreadsCalculations
             try
             {
                 _numberOfTasks = int.Parse(ss.ReadString());
-                _pmxTime = int.Parse(ss.ReadString());
-                _threeOptTime = int.Parse(ss.ReadString());
+                string strPmxTime = ss.ReadString();
+                strPmxTime = strPmxTime.Replace('.', ',');
+                _pmxTime = float.Parse(strPmxTime);
+                string strThreeOptTime = ss.ReadString();
+                strThreeOptTime = strThreeOptTime.Replace('.', ',');
+                _threeOptTime = float.Parse(strThreeOptTime);
                 _maxEpochs = int.Parse(ss.ReadString());
                 _tspGraph = new TspGraph(ss.ReadString(), true);
                 _tspGraph.PermutateNodes();

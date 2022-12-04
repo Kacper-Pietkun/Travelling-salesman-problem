@@ -88,15 +88,13 @@
                 <StackPanel Margin="10,10,10,10">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Label FontWeight="Bold" Width="50">PMX:</Label>
-                        <TextBox x:Name="TextBoxPmxTime" Width="75" Margin="10,0,10,0"
-                         PreviewTextInput="NumberValidationTextBox">30</TextBox>
+                        <TextBox x:Name="TextBoxPmxTime" Width="75" Margin="10,0,10,0">30</TextBox>
                         <ComboBox x:Name="comboBoxPmxUnit" Width="50"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                             Margin="0,5,0,0">
                         <Label FontWeight="Bold" Width="50">3-opt:</Label>
-                        <TextBox x:Name="TextBox3optTime" Width="75" Margin="10,0,10,0"
-                         PreviewTextInput="NumberValidationTextBox">30</TextBox>
+                        <TextBox x:Name="TextBox3optTime" Width="75" Margin="10,0,10,0">30</TextBox>
                         <ComboBox x:Name="comboBox3optUnit" Width="50"/>
                     </StackPanel>
 

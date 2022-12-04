@@ -27,6 +27,7 @@ using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace GUIwpf
 {
@@ -91,10 +92,14 @@ namespace GUIwpf
                 ProcessesManager.ButtonStartContent = "Pause";
                 ProcessesManager.PhaseCounter = 0;
 
-                int pmxTime = Int32.Parse(TextBoxPmxTime.Text);
+                string strPmxTime = TextBoxPmxTime.Text;
+                strPmxTime = strPmxTime.Replace('.', ',');
+                float pmxTime = float.Parse(strPmxTime);
                 if (comboBoxPmxUnit.Text == "min")
                     pmxTime *= 60;
-                int threeOptTime = Int32.Parse(TextBox3optTime.Text);
+                string strThreeOptTime = TextBox3optTime.Text;
+                strThreeOptTime = strThreeOptTime.Replace('.', ',');
+                float threeOptTime = float.Parse(strThreeOptTime);
                 if (comboBox3optUnit.Text == "min")
                     threeOptTime *= 60;
                 int maxEpochs = Int32.Parse(TextBoxMaxEpochs.Text);
