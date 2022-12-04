@@ -3,11 +3,21 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
+	  <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <BaseOutputPath>C:\Users\kacpe\Desktop\Studia\Semestr7\Programowanie Aplikacji Lokalnych .NET\Projekt\MultiThreading\TSP\SharedBuild</BaseOutputPath>
 	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <COMReference Include="{215d64d2-031c-33c7-96e3-61794cd1ee61}">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>4</VersionMinor>
+      <VersionMajor>2</VersionMajor>
+      <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
+    </COMReference>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TspAlgorithms\TspAlgorithms.csproj" />

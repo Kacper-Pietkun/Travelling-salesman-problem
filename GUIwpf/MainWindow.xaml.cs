@@ -28,6 +28,11 @@ using System.Timers;
 using Timer = System.Timers.Timer;
 using System.Runtime.CompilerServices;
 using System.Globalization;
+using System.Windows.Forms;
+using ComboBox = System.Windows.Controls.ComboBox;
+using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace GUIwpf
 {
@@ -42,12 +47,16 @@ namespace GUIwpf
         public ProcessesManager ProcessesManager { get; set; }
         private Task canvasTask;
         private CommandResource CommandResource { get; set; }
-
+        private PointsBindingList pointsBindingList;
+        private BindingSource pointsBindingSource;
         public MainWindow()
         {
             InitializeComponent();
             InitializeTimeUnitComboBox(comboBoxPmxUnit);
             InitializeTimeUnitComboBox(comboBox3optUnit);
+            pointsBindingList = new PointsBindingList();
+            pointsBindingSource = new BindingSource();
+            updateGrid();
             UiGraphManager = new UiGraphManager(canvasTsp);
             CommandResource = new CommandResource();
             ProcessesManager = new ProcessesManager();
@@ -131,6 +140,12 @@ namespace GUIwpf
 
         }
 
+        private void updateGrid()
+        {
+            pointsBindingSource.DataSource = pointsBindingList;
+            dataGridCanvas.ItemsSource = pointsBindingSource;
+        }
+
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
@@ -156,9 +171,12 @@ namespace GUIwpf
         {
             while (true)
             {
+                
                 if (ProcessesManager.ButtonStartContent != "Start")
                 {
                     Application.Current.Dispatcher.Invoke((Action)delegate {
+                        pointsBindingList = new PointsBindingList(ProcessesManager.BestGraph);
+                        updateGrid();
                         UiGraphManager.Draw(ProcessesManager.BestGraph);
                     });
                 }

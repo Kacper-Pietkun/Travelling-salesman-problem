@@ -42,9 +42,9 @@
                       AutoGenerateColumns="False" CanUserResizeColumns="False"
                       ItemsSource="{Binding}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Width="*"/>
-                    <DataGridTextColumn Header="X" Width="*"/>
-                    <DataGridTextColumn Header="Y" Width="*"/>
+                    <DataGridTextColumn Header="ID" Width="*" Binding="{Binding Path=Id}"/>
+                    <DataGridTextColumn Header="X" Width="*" Binding="{Binding Path=PosX}"/>
+                    <DataGridTextColumn Header="Y" Width="*" Binding="{Binding Path=PosY}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>

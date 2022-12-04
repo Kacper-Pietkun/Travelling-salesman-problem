@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 using TspAlgorithms;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace GUIwpf
 {
